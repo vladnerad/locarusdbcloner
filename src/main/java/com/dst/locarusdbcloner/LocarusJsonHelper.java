@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Properties;
 
@@ -16,7 +17,7 @@ public class LocarusJsonHelper {
     private Properties properties;
     private String basicAuth;
 
-    public LocarusJsonHelper(String locarusNum, String fromDate, String toDate) {
+    public LocarusJsonHelper(String locarusNum, String fromDate, Instant toDate) {
         try {
             //File propFile = new File("C:\\Users\\vpriselkov\\IdeaProjects\\RealTimeDozerControl\\DozerDataAnalzer\\src\\main\\resources\\config.properties");
             File propFile = new File("src\\main\\resources\\config.properties");
@@ -29,7 +30,7 @@ public class LocarusJsonHelper {
             e.printStackTrace();
         }
         this.url = String.format(
-                "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%sT00:00:00Z&to=%sT23:59:59Z",
+                "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%s&to=%s",
                 locarusNum, fromDate, toDate);
         mapper = new ObjectMapper();
     }
@@ -38,6 +39,7 @@ public class LocarusJsonHelper {
 
     public String getJson() {
         try {
+            System.out.println(url);
             URL obj = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
 

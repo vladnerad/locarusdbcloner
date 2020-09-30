@@ -31,16 +31,19 @@ public class LocarusdbclonerApplication {
 //            logger.info("New cycle");
             for (String loaderCollection : mongoOps.getCollectionNames()) {
                 // Today, now
-                String today = Instant.now().truncatedTo(ChronoUnit.DAYS).toString();
+                Instant today = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+                System.out.println("Now: " + today);
                 // Получить последнюю запись по времени
                 Query query = new Query().with(Sort.by(Sort.Direction.DESC, "time")).limit(1);
                 String lastTime = mongoOps.find(query, LocarusDataField.class, loaderCollection).get(0).getTime().toString();
+                System.out.println("Last record:" + lastTime);
                 String locNum = mongoOps.find(query, LocarusDataField.class, loaderCollection).get(0).getObjectID();
 
                 Message message = new LocarusJsonHelper(locNum, lastTime, today).getMessage();
                 if (message.getDescription() == null) {
                     for (LocarusDataField ldf : message.getResult().getData()) {
                         mongoOps.insert(ldf, loaderCollection);
+                        System.out.println("Inserted" + ldf.getTime().toString());
                     }
                 } else System.out.println(message.getDescription());
             }
@@ -54,8 +57,8 @@ public class LocarusdbclonerApplication {
 
     public static void addLoader(String dozerNum, String locNum, String dayFrom, MongoOperations mongoOps) {
         if (!mongoOps.collectionExists(dozerNum)) {
-            Instant today = Instant.now().truncatedTo(ChronoUnit.DAYS);
-            Message message = new LocarusJsonHelper(locNum, dayFrom, today.toString()).getMessage();
+            Instant today = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+            Message message = new LocarusJsonHelper(locNum, dayFrom, today).getMessage();
 
             if (message.getDescription() == null) {
                 for (LocarusDataField ldf : message.getResult().getData()) {
