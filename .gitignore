@@ -36,4 +36,4 @@ build/
 src/main/resources/config.properties
 
 ### logs ###
-/logs
+logs/
