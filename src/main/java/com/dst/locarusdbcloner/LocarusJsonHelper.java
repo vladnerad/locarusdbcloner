@@ -1,5 +1,6 @@
 package com.dst.locarusdbcloner;
 
+
 import com.dst.locarusdbcloner.response.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,6 +11,10 @@ import java.net.URL;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Properties;
+
+//import org.apache.logging.log4j.LogManager;
+//import org.apache.logging.log4j.Logger;
+//import ru.dst.analyze.realtime.response.Message;
 
 public class LocarusJsonHelper {
     private String url;
@@ -30,7 +35,8 @@ public class LocarusJsonHelper {
             e.printStackTrace();
         }
         this.url = String.format(
-                "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%s&to=%s",
+//                "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%sT00:00:00Z&to=%sT23:59:59Z",
+                "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%sT00:00:00Z&to=%s",
                 locarusNum, fromDate, toDate);
         mapper = new ObjectMapper();
     }
@@ -39,9 +45,10 @@ public class LocarusJsonHelper {
 
     public String getJson() {
         try {
-            System.out.println(url);
             URL obj = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+
+//            System.out.println(url);
 
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", basicAuth);
