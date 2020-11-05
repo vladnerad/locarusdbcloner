@@ -6,12 +6,13 @@ import java.util.Map;
 
 @JsonIgnoreProperties({ "referenceID", "navigationID", "objectType", "dist", "mileage", "voltage",
         "message", "extra", "nativeFlags", "generalListIn", "Coords", "Filter", "Flags", "Satellites",
-        "framePacket"})
+        "framePacket", "objectID"})
 public class LocarusDataField {
+//    private String time;
     private Time time;
 //    private String referenceID;
 //    private String navigationID;
-    private String objectID;
+//    private String objectID;
 //    private String objectType;
 //    private String dist;
 //    private String mileage;
@@ -32,6 +33,9 @@ public class LocarusDataField {
         return time;
     }
 
+//    public String  getTime() {
+//        return time;
+//    }
     public void setTime(Time time) {
         this.time = time;
     }
@@ -52,9 +56,9 @@ public class LocarusDataField {
         this.digitalIn = digitalIn;
     }
 
-    public String getObjectID() {
-        return objectID;
-    }
+//    public String getObjectID() {
+//        return objectID;
+//    }
 
     //    @Override
 //    public String toString() {
