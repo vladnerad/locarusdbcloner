@@ -35,7 +35,6 @@ public class LocarusJsonHelper {
             e.printStackTrace();
         }
         this.url = String.format(
-//                "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%sT00:00:00Z&to=%sT23:59:59Z",
                 "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%sT00:00:00Z&to=%s",
                 locarusNum, fromDate, toDate);
         mapper = new ObjectMapper();

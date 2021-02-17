@@ -9,17 +9,17 @@ public class Message {
         return result;
     }
 
-    public void setResult(LocarusResultField result) {
-        this.result = result;
-    }
+//    public void setResult(LocarusResultField result) {
+//        this.result = result;
+//    }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+//    public void setDescription(String description) {
+//        this.description = description;
+//    }
 
     @Override
     public String toString() {

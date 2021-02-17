@@ -14,7 +14,8 @@ import java.time.temporal.ChronoUnit;
 
 public class DbCloner {
 
-    private static final String connectionStr = "mongodb://root:root@localhost:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
+//    private static final String connectionStr = "mongodb://root:root@localhost:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
+    private static final String connectionStr = "mongodb://root:root1@192.168.210.235:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
     private static final String dbName = "wheel_loaders";
     private static final String dbLoadersList = "loaders_list";
     private static final String collAllLoaders = "all_loaders";
@@ -34,7 +35,7 @@ public class DbCloner {
 //                    System.out.println("Now: " + today);
                 // Получить последнюю запись по времени
                 Query query = new Query().with(Sort.by(Sort.Direction.DESC, "time")).limit(1);
-                String lastTime = mongoOps.find(query, LocarusDataField.class, loaderNum).get(0).getTime().toString();
+                String lastTime = mongoOps.find(query, LocarusDataField.class, loaderNum).get(0).getTime()/*.toString()*/;
                 System.out.println("Last record: " + lastTime);
 //                    String locNum = mongoOps.find(query, LocarusDataField.class, loaderNum).get(0).getObjectID();
 
