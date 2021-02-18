@@ -2,14 +2,17 @@ package com.dst.locarusdbcloner.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Map;
-
+@Document
 @JsonIgnoreProperties({ "referenceID", "navigationID", "objectType", "dist", "mileage", "voltage",
         "message", "extra", "nativeFlags", "generalListIn", "Filter", "Flags", "Satellites",
         "framePacket", "objectID"})
 public class LocarusDataField {
     @JsonProperty("time")
+    @Indexed(unique=true)
     private String time;
     @JsonProperty("digitalIn")
     private String digitalIn;

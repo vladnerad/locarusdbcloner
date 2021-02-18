@@ -3,14 +3,17 @@ package com.dst.locarusdbcloner;
 import com.dst.locarusdbcloner.response.LocarusDataField;
 import com.dst.locarusdbcloner.response.Message;
 import com.mongodb.client.MongoClients;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Query;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 public class DbCloner {
 
@@ -38,26 +41,42 @@ public class DbCloner {
                 String lastTime = mongoOps.find(query, LocarusDataField.class, loaderNum).get(0).getTime()/*.toString()*/;
                 System.out.println("Last record: " + lastTime);
 //                    String locNum = mongoOps.find(query, LocarusDataField.class, loaderNum).get(0).getObjectID();
-
-                Message message = new LocarusJsonHelper(locNum, lastTime, today).getMessage();
-                if (message.getDescription() == null) {
-                    for (LocarusDataField ldf : message.getResult().getData()) {
-                        mongoOps.insert(ldf, loaderNum);
+                List<String> urls = LocarusJsonHelper.getQueriesList(locNum, lastTime, today);
+                for (String url: urls) {
+                    System.out.println("Getting URL: " + url);
+                    Message message = LocarusJsonHelper.getMessage(url);
+                    if (message != null) {
+                        if (message.getDescription() == null) {
+                            for (LocarusDataField ldf : message.getResult().getData()) {
+                                mongoOps.insert(ldf, loaderNum);
 //                            System.out.println("Inserted: " + ldf.getTime().toString());
+                            }
+                            System.out.println("Inserted " + message.getResult().getData().size() + " documents.");
+                        } else System.out.println(message.getDescription() + " Code: " + message.getCode());
                     }
-                    System.out.println("Inserted " + message.getResult().getData().size() + " documents.");
-                } else System.out.println(message.getDescription());
+                }
             } else {
                 System.out.println("Creating new collection...");
                 String dateFrom = loader.getRecordingSince();
-                Message message = new LocarusJsonHelper(locNum, dateFrom, today).getMessage();
-                if (message.getDescription() == null) {
-                    for (LocarusDataField ldf : message.getResult().getData()) {
-                        mongoOps.insert(ldf, loaderNum);
+                List<String> urls = LocarusJsonHelper.getQueriesList(locNum, dateFrom + "T00:00:00Z", today);
+                System.out.println(urls);
+                for (String url: urls) {
+                    System.out.println("Getting URL: " + url);
+                    Message message = LocarusJsonHelper.getMessage(url);
+                    if (message != null) {
+                        if (message.getDescription() == null) {
+                            mongoOps.indexOps(loaderNum).ensureIndex(new Index().on("time", Sort.Direction.ASC).unique());
+                            for (LocarusDataField ldf : message.getResult().getData()) {
+                                try {
+                                    mongoOps.insert(ldf, loaderNum);
+                                } catch (DataIntegrityViolationException ignored) {}
+                            }
+//                            message.getResult().getData().forEach(l -> mongoOps.insert(l, loaderNum));
+                            System.out.println("Inserted " + message.getResult().getData().size() + " documents.");
+                            System.out.println("Created collection: " + loaderNum);
+                        } else System.out.println(message.getDescription());
                     }
-                    System.out.println("Inserted " + message.getResult().getData().size() + " documents.");
-                    System.out.println("Created collection: " + loaderNum);
-                } else System.out.println(message.getDescription());
+                }
             }
         }
     }
