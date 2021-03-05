@@ -14,8 +14,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.TimerTask;
 
-public class DbCloner {
+public class DbCloner extends TimerTask {
 
     //    private static final String connectionStr = "mongodb://root:root@localhost:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
     private static final String connectionStr = "mongodb://root:root1@192.168.210.235:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
@@ -27,7 +28,8 @@ public class DbCloner {
     public static final MongoOperations mongoOpsLoadList = new MongoTemplate(new SimpleMongoClientDatabaseFactory(MongoClients.create(connectionStr), dbLoadersList));
     private String loaderNum;
 
-    public void operate() {
+    @Override
+    public void run() {
         for (Loader loader : mongoOpsLoadList.findAll(Loader.class, collAllLoaders)) {
             loaderNum = String.valueOf(loader.getSerialNumber());
             String locNum = loader.getLocarusNumber();

@@ -1,37 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration>
+<Configuration status="INFO">
+    <Properties>
+        <Property name="filename">logs/app.log</Property>
+        <Property name="filePattern">logs/app.%i.log.gz</Property>
+    </Properties>
+
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout
-                    pattern="%style{%d{ISO8601}}{black} %highlight{%-5level }[%style{%t}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n%throwable" />
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n" />
         </Console>
 
-        <RollingFile name="RollingFile"
-                     fileName="./logs/spring-boot-logger-log4j2.log"
-                     filePattern="./logs/$${date:yyyy-MM}/spring-boot-logger-log4j2-%d{-dd-MMMM-yyyy}-%i.log.gz">
+        <!--        <File name="LogToFile" fileName="${filename}">-->
+        <!--            <LevelRangeFilter minLevel="FATAL" maxLevel="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>-->
+        <!--            <PatternLayout pattern="%d %p %c{1.} [%t] %msg%n" />-->
+        <!--        </File>-->
+
+        <RollingFile
+                name="roll-by-size"
+                fileName="${filename}"
+                filePattern="${filePattern}"
+                ignoreExceptions="false">
             <PatternLayout>
-                <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %p %m%n</Pattern>
             </PatternLayout>
             <Policies>
-                <!-- rollover on startup, daily and when the file reaches
-                    10 MegaBytes -->
                 <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy
-                        size="10 MB" />
-                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="1024 KB" />
             </Policies>
         </RollingFile>
     </Appenders>
 
     <Loggers>
-        <!-- LOG everything at INFO level -->
-        <Root level="info">
-            <AppenderRef ref="Console" />
-            <AppenderRef ref="RollingFile" />
+        <Logger name="com.dst.locarusdbcloner.DbCloner" level="info" additivity="false">
+            <appender-ref ref="roll-by-size" />
+            <appender-ref ref="console" />
+        </Logger>
+        <Root level="warn">
+<!--            <appender-ref ref="roll-by-size" />-->
+            <AppenderRef ref="console" />
         </Root>
-
-        <!-- LOG "com.baeldung*" at TRACE level -->
-        <Logger name="com.baeldung" level="trace"></Logger>
     </Loggers>
-
 </Configuration>
