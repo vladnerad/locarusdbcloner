@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DbCloner {
 
-//    private static final String connectionStr = "mongodb://root:root@localhost:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
+    //    private static final String connectionStr = "mongodb://root:root@localhost:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
     private static final String connectionStr = "mongodb://root:root1@192.168.210.235:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
     private static final String dbName = "wheel_loaders";
     private static final String dbLoadersList = "loaders_list";
@@ -25,58 +25,49 @@ public class DbCloner {
 
     public static final MongoOperations mongoOps = new MongoTemplate(new SimpleMongoClientDatabaseFactory(MongoClients.create(connectionStr), dbName));
     public static final MongoOperations mongoOpsLoadList = new MongoTemplate(new SimpleMongoClientDatabaseFactory(MongoClients.create(connectionStr), dbLoadersList));
+    private String loaderNum;
 
-    public void operate(){
-        for (Loader loader: mongoOpsLoadList.findAll(Loader.class, collAllLoaders)){
-            String loaderNum = String.valueOf(loader.getSerialNumber());
-//                System.out.println(loaderNum);
+    public void operate() {
+        for (Loader loader : mongoOpsLoadList.findAll(Loader.class, collAllLoaders)) {
+            loaderNum = String.valueOf(loader.getSerialNumber());
             String locNum = loader.getLocarusNumber();
+            List<String> urls;
             // Today, now
             Instant today = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-            if (mongoOps.collectionExists(loaderNum)){
+            if (mongoOps.collectionExists(loaderNum)) {
                 System.out.println("Loader #" + loader.getSerialNumber());
-//                    System.out.println("Now: " + today);
                 // Получить последнюю запись по времени
                 Query query = new Query().with(Sort.by(Sort.Direction.DESC, "time")).limit(1);
-                String lastTime = mongoOps.find(query, LocarusDataField.class, loaderNum).get(0).getTime()/*.toString()*/;
+                String lastTime = mongoOps.find(query, LocarusDataField.class, loaderNum).get(0).getTime();
                 System.out.println("Last record: " + lastTime);
 //                    String locNum = mongoOps.find(query, LocarusDataField.class, loaderNum).get(0).getObjectID();
-                List<String> urls = LocarusJsonHelper.getQueriesList(locNum, lastTime, today);
-                for (String url: urls) {
-                    System.out.println("Getting URL: " + url);
-                    Message message = LocarusJsonHelper.getMessage(url);
-                    if (message != null) {
-                        if (message.getDescription() == null) {
-                            for (LocarusDataField ldf : message.getResult().getData()) {
-                                mongoOps.insert(ldf, loaderNum);
-//                            System.out.println("Inserted: " + ldf.getTime().toString());
-                            }
-                            System.out.println("Inserted " + message.getResult().getData().size() + " documents.");
-                        } else System.out.println(message.getDescription() + " Code: " + message.getCode());
-                    }
-                }
+                urls = LocarusJsonHelper.getQueriesList(locNum, lastTime, today);
             } else {
-                System.out.println("Creating new collection...");
+                System.out.println("Creating new collection: " + loaderNum);
                 String dateFrom = loader.getRecordingSince();
-                List<String> urls = LocarusJsonHelper.getQueriesList(locNum, dateFrom + "T00:00:00Z", today);
-                System.out.println(urls);
-                for (String url: urls) {
-                    System.out.println("Getting URL: " + url);
-                    Message message = LocarusJsonHelper.getMessage(url);
-                    if (message != null) {
-                        if (message.getDescription() == null) {
-                            mongoOps.indexOps(loaderNum).ensureIndex(new Index().on("time", Sort.Direction.ASC).unique());
-                            for (LocarusDataField ldf : message.getResult().getData()) {
-                                try {
-                                    mongoOps.insert(ldf, loaderNum);
-                                } catch (DataIntegrityViolationException ignored) {}
-                            }
-//                            message.getResult().getData().forEach(l -> mongoOps.insert(l, loaderNum));
-                            System.out.println("Inserted " + message.getResult().getData().size() + " documents.");
-                            System.out.println("Created collection: " + loaderNum);
-                        } else System.out.println(message.getDescription());
+                urls = LocarusJsonHelper.getQueriesList(locNum, dateFrom + "T00:00:00Z", today);
+//                System.out.println(urls);
+                mongoOps.indexOps(loaderNum).ensureIndex(new Index().on("time", Sort.Direction.ASC).unique());
+            }
+            copyLocarusResult(urls);
+        }
+    }
+
+    private void copyLocarusResult(List<String> urls) {
+        for (String url : urls) {
+            System.out.println("Getting URL: " + url);
+            Message message = LocarusJsonHelper.getMessage(url);
+            if (message != null) {
+                if (message.getDescription() == null) {
+                    for (LocarusDataField ldf : message.getResult().getData()) {
+                        try {
+                            mongoOps.insert(ldf, loaderNum);
+                        } catch (DataIntegrityViolationException ignored) {
+                        }
                     }
-                }
+//                            message.getResult().getData().forEach(l -> mongoOps.insert(l, loaderNum));
+                    System.out.println("Inserted " + message.getResult().getData().size() + " documents.");
+                } else System.out.println(message.getDescription() + " Code: " + message.getCode());
             }
         }
     }

@@ -14,11 +14,4 @@ public class AnalogIn {
     public void setMap(Map<String, Integer> map) {
         this.map = map;
     }
-
-//    @Override
-//    public String toString() {
-//        return "AnalogIn{" +
-//                "map=" + map +
-//                '}';
-//    }
 }

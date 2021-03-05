@@ -1,6 +1,5 @@
 package com.dst.locarusdbcloner;
 
-
 import com.dst.locarusdbcloner.response.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -23,17 +21,17 @@ import java.util.Properties;
 //import ru.dst.analyze.realtime.response.Message;
 
 public class LocarusJsonHelper {
-    private String url;
-    private static ObjectMapper mapper;
-    private static Properties properties;
+//    private String url;
+    private static final ObjectMapper mapper;
     private static String basicAuth;
-//    private List<String> urls;
 
    static  {
         try {
             //File propFile = new File("C:\\Users\\vpriselkov\\IdeaProjects\\RealTimeDozerControl\\DozerDataAnalzer\\src\\main\\resources\\config.properties");
-            File propFile = new File("src\\main\\resources\\config.properties");
-            properties = new Properties();
+//            File propFile = new File(new File("").getAbsolutePath() + File.separator + /*"\\" +*/ "src\\main\\resources\\config.properties");
+            File propFile = new File(new File("").getAbsolutePath() + File.separator.concat("src").concat(File.separator).concat("main").concat(File.separator).concat("resources").concat(File.separator).concat("config.properties"));
+//            System.out.println(propFile.getAbsolutePath());
+            Properties properties = new Properties();
             properties.load(new FileReader(propFile));
             //    private static final Logger logger = LogManager.getLogger(JsonHelper.class);
             String userCredentials = properties.getProperty("locarus.user") + ":" + properties.getProperty("locarus.pass");
@@ -41,22 +39,13 @@ public class LocarusJsonHelper {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        urls = getQueriesList(locarusNum, fromDate, toDate);
-//        System.out.println(urls);
-//        this.url = String.format(
-//                "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%sT00:00:00Z&to=%s",
-//                locarusNum, fromDate, toDate);
         mapper = new ObjectMapper();
     }
-
-//    private String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
 
     public static String getJson(String urlStr) {
         try {
             URL obj = new URL(urlStr);
             HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-
-//            System.out.println(url);
 
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", basicAuth);
@@ -103,16 +92,17 @@ public class LocarusJsonHelper {
         Instant buff = from;
         if (ChronoUnit.DAYS.between(from, toDate) > 3) {
             while (ChronoUnit.DAYS.between(buff, toDate) > 3) {
-                result.add(String.format(
-                        "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%s&to=%s",
-                        locarusNum, buff, buff.plus(gap, ChronoUnit.DAYS)));
+                result.add(getHttpReq(locarusNum, buff, buff.plus(gap, ChronoUnit.DAYS)));
                 buff = buff.plus(gap, ChronoUnit.DAYS);
             }
         }
-        result.add(String.format(
-                "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%sT00:00:00Z&to=%s",
-                locarusNum, buff, toDate));
-
+        result.add(getHttpReq(locarusNum, buff, toDate));
         return result;
+    }
+
+    private static String getHttpReq(String locarusNum, Instant fromDate, Instant toDate){
+       return String.format(
+               "http://lserver3.ru:8091/do.locator?q=track&imei=%s&mode=full&filter=false&from=%sT00:00:00Z&to=%s",
+               locarusNum, fromDate, toDate);
     }
 }
